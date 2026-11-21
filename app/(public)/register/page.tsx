@@ -1,0 +1,347 @@
+"use client"
+
+import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { registerUser } from "@/features/auth/api"
+import {
+  Share2,
+  GraduationCap,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Loader2,
+} from "lucide-react"
+
+import AuthHeader from "@/components/auth/auth-header"
+import RoleToggle, { type AuthRole } from "@/components/auth/role-toggle"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+const UNIVERSITIES = [
+  "University of Management and Technology (UMT)",
+  "University of the Punjab (PU)",
+  "National University of Sciences and Technology (NUST)",
+  "Lahore University of Management Sciences (LUMS)",
+  "FAST National University (NUCES)",
+  "COMSATS University Islamabad",
+  "University of Engineering and Technology (UET) Lahore",
+  "Government College University (GCU) Lahore",
+  "Information Technology University (ITU)",
+  "Quaid-i-Azam University (QAU)",
+  "International Islamic University Islamabad (IIUI)",
+  "University of Central Punjab (UCP)",
+  "Bahria University",
+  "Air University",
+  "Other",
+]
+
+const SEMESTERS = ["1", "2", "3", "4", "5", "6", "7", "8"]
+
+export default function RegisterPage() {
+  const router = useRouter()
+  const [role, setRole] = useState<AuthRole>("student")
+  const [showPassword, setShowPassword] = useState(false)
+
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [university, setUniversity] = useState("")
+  const [department, setDepartment] = useState("")
+  const [semester, setSemester] = useState("")
+
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleRegister(e: React.FormEvent) {
+    e.preventDefault()
+    setError(null)
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      await registerUser({
+        email,
+        password,
+        name,
+        role,
+        university,
+        department,
+        semester,
+      })
+
+      router.push("/login")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.")
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <AuthHeader
+        navLinks={[
+          { label: "About", href: "#" },
+          { label: "Resources", href: "#" },
+          { label: "Support", href: "#" },
+        ]}
+        ctaLabel="Log In"
+        ctaHref="/login"
+        ctaPrompt="Already have an account?"
+      />
+
+      <main className="flex-1 flex min-h-0">
+        {/* Left: Marketing */}
+        <section className="hidden lg:flex flex-col justify-center w-[40%] max-w-xl px-12 xl:px-16 py-12">
+          <span className="inline-flex w-fit items-center rounded-md bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-wide text-primary">
+            AI Study Platform
+          </span>
+          <h2 className="mt-4 text-3xl font-bold leading-tight text-foreground">
+            Turn course materials into{" "}
+            <span className="text-primary">
+              summaries, flashcards, and quizzes.
+            </span>
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            Register as a student or teacher, enroll in courses, upload PDFs and
+            slides, then generate study content grounded in exactly what your
+            class covered — not generic AI filler.
+          </p>
+
+          <ul className="mt-8 space-y-6">
+            <li className="flex gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Share2 className="size-5" />
+              </span>
+              <div>
+                <h3 className="font-semibold">RAG from your files</h3>
+                <p className="text-sm text-muted-foreground">
+                  Pick specific pages or slides; AI reads your materials before
+                  generating.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <GraduationCap className="size-5" />
+              </span>
+              <div>
+                <h3 className="font-semibold">Student & teacher roles</h3>
+                <p className="text-sm text-muted-foreground">
+                  Teachers publish courses and assignments; students practice with
+                  AI-built quizzes and notes.
+                </p>
+              </div>
+            </li>
+          </ul>
+
+          <div className="mt-10 rounded-xl bg-primary p-6 text-primary-foreground">
+            <p className="text-sm leading-relaxed">
+              &ldquo;I selected pages 12–14 from our OS slides and got a quiz that
+              actually matched the lecture. Much better than copying ChatGPT
+              answers.&rdquo;
+            </p>
+            <div className="mt-4 flex items-center gap-3">
+              <Avatar className="size-10 border-2 border-primary-foreground/20">
+                <AvatarFallback className="bg-primary-foreground/20 text-primary-foreground">
+                  HK
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">Hamza Khan</p>
+                <p className="text-xs text-primary-foreground/80">
+                  BSCS Student, UMT Lahore
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Right: Form */}
+        <section className="flex-1 flex flex-col justify-center px-6 py-12 sm:px-12 lg:pl-16 lg:pr-24 xl:pl-24 overflow-y-auto">
+          <div className="w-full max-w-md mx-auto lg:mx-0 space-y-8">
+            <div>
+              <h1 className="text-2xl font-bold">Create Account</h1>
+              <p className="mt-1 text-muted-foreground">
+                Fill in the details below to start your academic journey.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Select your role</Label>
+              <RoleToggle
+                value={role}
+                onChange={setRole}
+                showIcons={true}
+              />
+            </div>
+
+            <form className="space-y-5" onSubmit={handleRegister}>
+              <div className="grid sm:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="reg-name">Full Name</Label>
+                  <Input
+                    id="reg-name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Fatima Ahmed"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-email">Email Address</Label>
+                  <Input
+                    id="reg-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@university.edu"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reg-university">University / Institution</Label>
+                <Select value={university} onValueChange={setUniversity}>
+                  <SelectTrigger id="reg-university">
+                    <SelectValue placeholder="Select your university" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    {UNIVERSITIES.map((uni) => (
+                      <SelectItem key={uni} value={uni}>
+                        {uni}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-5">
+                <div className="space-y-2">
+                  <Label htmlFor="reg-department">Department</Label>
+                  <Input
+                    id="reg-department"
+                    type="text"
+                    value={department}
+                    onChange={(e) => setDepartment(e.target.value)}
+                    placeholder="e.g. Computer Science"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="reg-semester">Semester / Level</Label>
+                  <Select value={semester} onValueChange={setSemester}>
+                    <SelectTrigger id="reg-semester">
+                      <SelectValue placeholder="Choose semester" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SEMESTERS.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          Semester {s}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reg-password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="reg-password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="pr-9"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="reg-confirm">Confirm Password</Label>
+                <Input
+                  id="reg-confirm"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your password"
+                />
+              </div>
+
+              <div className="flex items-start gap-2">
+                <Checkbox id="reg-terms" className="mt-0.5" />
+                <Label
+                  htmlFor="reg-terms"
+                  className="text-sm font-normal cursor-pointer leading-relaxed"
+                >
+                  I agree to the{" "}
+                  <Link href="#" className="text-primary underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="#" className="text-primary underline">
+                    Privacy Policy
+                  </Link>
+                  .
+                </Label>
+              </div>
+
+              {error && (
+                <p className="text-sm text-red-500 font-medium text-center">
+                  {error}
+                </p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Creating your account...
+                  </>
+                ) : (
+                  <>
+                    Create Academic Account
+                    <ArrowRight className="ml-2 size-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+        </section>
+      </main>
+    </>
+  )
+}
